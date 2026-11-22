@@ -43,8 +43,22 @@ def api_reply(cfg, prompt, text):
         with urllib.request.urlopen(request, timeout=40) as response:
             result = json.load(response)
     except urllib.error.HTTPError as exc:
-        # Do not print URLs, headers, API keys or response bodies.
-        raise RuntimeError("ИИ: HTTP " + str(exc.code)) from None
+        detail = f"ИИ: HTTP {exc.code}"
+        if exc.code == 429:
+            try:
+                error = json.loads(exc.read(8192)).get("error", {})
+                code = error.get("code")
+                if code in (
+                    "credit_balance_exhausted", "insufficient_quota",
+                    "organization_spend_limit_exceeded", "project_spend_limit_exceeded",
+                    "organization_usage_limit_exceeded", "rate_limit_exceeded", "slow_down",
+                ):
+                    detail += f" ({code})"
+                elif error.get("type") == "rate_limit_error":
+                    detail += " (rate_limit_error)"
+            except (ValueError, AttributeError, OSError):
+                pass
+        raise RuntimeError(detail) from None
     except (OSError, ValueError):
         raise RuntimeError("Не удалось получить ответ ИИ") from None
     if result.get("status") != "completed":
