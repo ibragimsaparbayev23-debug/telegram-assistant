@@ -254,7 +254,8 @@ def handler_class(controller, loop):
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
-            self.send_header("Referrer-Policy", "no-referrer")
+            # Preserve Origin on same-site form POSTs without sending a referrer off-site.
+            self.send_header("Referrer-Policy", "same-origin")
             self.send_header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'")
             for key, value in (extra or {}).items(): self.send_header(key, value)
             self.send_header("Content-Length", str(len(body)))
