@@ -301,7 +301,9 @@ def handler_class(controller, loop):
                     return self.respond(429, page("<p>Слишком много попыток. Подождите минуту.</p>"))
                 Handler.attempts.append(now)
                 password = values.get("password", [""])[0]
-                if len(controller.secret) < 24 or not hmac.compare_digest(password.encode(), controller.secret.encode()):
+                if len(controller.secret) < 24:
+                    return self.respond(503, page('<p>В настройках сервиса требуется ADMIN_PASSWORD длиной от 24 символов.</p><a href="/">Назад</a>'))
+                if not hmac.compare_digest(password.encode(), controller.secret.encode()):
                     return self.respond(403, page('<p>Неверный пароль.</p><a href="/">Назад</a>'))
                 token = signed_cookie(controller.secret)
                 return self.respond(303, extra={"Location": "/", "Set-Cookie":
