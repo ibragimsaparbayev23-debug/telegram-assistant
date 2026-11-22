@@ -1,0 +1,8 @@
+data
+*.session*
+*.sqlite*
+config.json
+.env*
+.git
+.venv
+__pycache__
