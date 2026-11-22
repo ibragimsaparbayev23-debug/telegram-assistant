@@ -64,7 +64,7 @@ class Controller:
         self.last_code = 0
         self.wait_until = 0
         self.gate = asyncio.Lock()
-        self.secret = os.environ.get("ADMIN_PASSWORD", "")
+        self.secret = os.environ.get("ADMIN_PASSWORD", "").strip()
         self.problem = ""
         # Require persistent storage on Railway, never quietly use an ephemeral session.
         mount = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH")
@@ -300,7 +300,7 @@ def handler_class(controller, loop):
                 if len(Handler.attempts) >= 10:
                     return self.respond(429, page("<p>Слишком много попыток. Подождите минуту.</p>"))
                 Handler.attempts.append(now)
-                password = values.get("password", [""])[0]
+                password = values.get("password", [""])[0].strip()
                 if len(controller.secret) < 24:
                     return self.respond(503, page('<p>В настройках сервиса требуется ADMIN_PASSWORD длиной от 24 символов.</p><a href="/">Назад</a>'))
                 if not hmac.compare_digest(password.encode(), controller.secret.encode()):
